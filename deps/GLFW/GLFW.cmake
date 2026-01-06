@@ -7,14 +7,14 @@ else()
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(_glfw_use_wayland "-DGLFW_USE_WAYLAND=ON")
+    set(_glfw_use_wayland "-DGLFW_BUILD_WAYLAND=ON")
 else()
-    set(_glfw_use_wayland "-DGLFW_USE_WAYLAND=FF")
+    set(_glfw_use_wayland "-DGLFW_BUILD_WAYLAND=FF")
 endif()
 
 orcaslicer_add_cmake_project(GLFW
-    URL https://github.com/glfw/glfw/archive/refs/tags/3.3.10.zip
-    URL_HASH SHA256=5e4ae02dc7c9b084232824c2511679a7e0b0b09f2bae70191ad9703691368b58
+    URL https://github.com/glfw/glfw/archive/refs/tags/3.4.zip
+    URL_HASH SHA256=a133ddc3d3c66143eba9035621db8e0bcf34dba1ee9514a9e23e96afd39fd57a
     #DEPENDS dep_Boost
     CMAKE_ARGS
         -DBUILD_SHARED_LIBS=${_build_shared} 

@@ -2368,9 +2368,9 @@ void TabPrint::build()
         optgroup->append_single_option_line("gap_fill_flow_ratio", "quality_settings_wall_and_surfaces#surface-flow-ratio");
         optgroup->append_single_option_line("support_flow_ratio", "quality_settings_wall_and_surfaces#surface-flow-ratio");
         optgroup->append_single_option_line("support_interface_flow_ratio", "quality_settings_wall_and_surfaces#surface-flow-ratio");
+        optgroup->append_single_option_line("only_one_wall_first_layer", "quality_settings_wall_and_surfaces#only-one-wall");
         optgroup->append_single_option_line("only_one_wall_top", "quality_settings_wall_and_surfaces#only-one-wall");
         optgroup->append_single_option_line("min_width_top_surface", "quality_settings_wall_and_surfaces#threshold");
-        optgroup->append_single_option_line("only_one_wall_first_layer", "quality_settings_wall_and_surfaces#only-one-wall");
         optgroup->append_single_option_line("reduce_crossing_wall", "quality_settings_wall_and_surfaces#avoid-crossing-walls");
         optgroup->append_single_option_line("max_travel_detour_distance", "quality_settings_wall_and_surfaces#max-detour-length");
 
@@ -2503,6 +2503,7 @@ void TabPrint::build()
         optgroup->append_single_option_line("sparse_infill_acceleration", "speed_settings_acceleration#sparse-infill");
         optgroup->append_single_option_line("internal_solid_infill_acceleration", "speed_settings_acceleration#internal-solid-infill");
         optgroup->append_single_option_line("initial_layer_acceleration", "speed_settings_acceleration#initial-layer");
+        optgroup->append_single_option_line("initial_layer_travel_acceleration", "speed_settings_acceleration#initial-layer-travel");
         optgroup->append_single_option_line("top_surface_acceleration", "speed_settings_acceleration#top-surface");
         optgroup->append_single_option_line("travel_acceleration", "speed_settings_acceleration#travel");
         optgroup->append_single_option_line("accel_to_decel_enable", "speed_settings_acceleration");
@@ -2516,6 +2517,7 @@ void TabPrint::build()
         optgroup->append_single_option_line("infill_jerk", "speed_settings_jerk_xy#infill");
         optgroup->append_single_option_line("top_surface_jerk", "speed_settings_jerk_xy#top-surface");
         optgroup->append_single_option_line("initial_layer_jerk", "speed_settings_jerk_xy#initial-layer");
+        optgroup->append_single_option_line("initial_layer_travel_jerk", "speed_settings_jerk_xy#initial-layer-travel");
         optgroup->append_single_option_line("travel_jerk", "speed_settings_jerk_xy#travel");
 
         optgroup = page->new_optgroup(L("Advanced"), L"param_advanced", 15);
@@ -2658,6 +2660,7 @@ void TabPrint::build()
         optgroup->append_single_option_line("brim_width", "others_settings_brim#width");
         optgroup->append_single_option_line("brim_object_gap", "others_settings_brim#brim-object-gap");
         optgroup->append_single_option_line("brim_use_efc_outline", "others_settings_brim#brim-use-efc-outline");
+        optgroup->append_single_option_line("combine_brims", "others_settings_brim#combine-brims");
         optgroup->append_single_option_line("brim_ears_max_angle", "others_settings_brim#ear-max-angle");
         optgroup->append_single_option_line("brim_ears_detection_length", "others_settings_brim#ear-detection-radius");
 
@@ -4015,16 +4018,18 @@ void TabFilament::build()
 
         optgroup = page->new_optgroup(L("Exhaust fan"),L"param_cooling_exhaust");
 
-        optgroup->append_single_option_line("activate_air_filtration", "material_cooling#activate-air-filtration");
+        optgroup->append_single_option_line("activate_air_filtration", "material_cooling#activate-air-filtration", 0);
 
         line = {L("During print"), ""};
-        line.append_option(optgroup->get_option("during_print_exhaust_fan_speed"));
+        line.append_option(optgroup->get_option("activate_air_filtration_during_print", 0));
+        line.append_option(optgroup->get_option("during_print_exhaust_fan_speed", 0));
         line.label_path = "material_cooling#during-print";
         optgroup->append_line(line);
 
 
         line = {L("Complete print"), ""};
-        line.append_option(optgroup->get_option("complete_print_exhaust_fan_speed"));
+        line.append_option(optgroup->get_option("activate_air_filtration_on_completion", 0));
+        line.append_option(optgroup->get_option("complete_print_exhaust_fan_speed", 0));
         line.label_path = "material_cooling#complete-print";
         optgroup->append_line(line);
         //BBS
@@ -4191,6 +4196,12 @@ void TabFilament::toggle_options()
             toggle_option(el, has_enable_overhang_bridge_fan);
 
       toggle_option("additional_cooling_fan_speed", cfg.opt_bool("auxiliary_fan"));
+
+      bool activate_air_filtration = m_config->opt_bool("activate_air_filtration", 0);
+      toggle_option("activate_air_filtration_during_print", activate_air_filtration, 0);
+      toggle_option("activate_air_filtration_on_completion", activate_air_filtration, 0);
+      toggle_option("during_print_exhaust_fan_speed", activate_air_filtration && m_config->opt_bool("activate_air_filtration_during_print", 0), 0);
+      toggle_option("complete_print_exhaust_fan_speed", activate_air_filtration && m_config->opt_bool("activate_air_filtration_on_completion", 0), 0);
 
       // Orca: toggle dont slow down for external perimeters if
       bool has_slow_down_for_layer_cooling = m_config->opt_bool("slow_down_for_layer_cooling", 0);

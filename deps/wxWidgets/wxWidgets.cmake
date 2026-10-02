@@ -1,34 +1,26 @@
-set(_wx_toolkit "")
-set(_wx_debug_postfix "")
-set(_wx_shared -DwxBUILD_SHARED=OFF)
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(_gtk_ver 2)
+if (NOT EMSCRIPTEN)
+    set(_wx_toolkit "")
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        set(_wx_toolkit "-DwxBUILD_TOOLKIT=gtk3")
+    endif()
 
-    if (DEP_WX_GTK3)
-        set(_gtk_ver 3)
+    set(_unicode_utf8 OFF)
+    if (UNIX AND NOT APPLE) # wxWidgets will not use char as the underlying type for wxString unless its forced to.
+        set (_unicode_utf8 ON)
+    endif()
+
+    if (MSVC)
+        set(_wx_webview "-DwxUSE_WEBVIEW_EDGE=ON")
+
+    else ()
+        set(_wx_webview "-DwxUSE_WEBVIEW=ON")
     endif ()
 
-    set(_wx_toolkit "-DwxBUILD_TOOLKIT=gtk${_gtk_ver}")
-    if (FLATPAK)
-        set(_wx_debug_postfix "d")
-        set(_wx_shared -DwxBUILD_SHARED=ON -DBUILD_SHARED_LIBS:BOOL=ON)
+    if (UNIX AND NOT APPLE)
+        set(_wx_secretstore "-DwxUSE_SECRETSTORE=OFF")
+    else ()
+        set(_wx_secretstore "-DwxUSE_SECRETSTORE=ON")
     endif ()
-endif()
-
-if (MSVC)
-    set(_wx_edge "-DwxUSE_WEBVIEW_EDGE=ON")
-else ()
-    set(_wx_edge "-DwxUSE_WEBVIEW_EDGE=OFF")
-endif ()
-
-set(_wx_patch_command "")
-if (APPLE)
-    set(_wx_patch_command
-        ${GIT_EXECUTABLE} checkout -f -- src/osx/cocoa/colour.mm
-        COMMAND ${GIT_EXECUTABLE} apply --verbose
-                ${CMAKE_CURRENT_LIST_DIR}/0001-macos-use-srgb-colour-components.patch
-    )
-endif ()
 
 orcaslicer_add_cmake_project(
     wxWidgets
@@ -67,29 +59,19 @@ orcaslicer_add_cmake_project(
         -DwxUSE_EXPAT=sys
         -DwxUSE_NANOSVG=OFF
 )
+    set(DEP_wxWidgets_DEPENDS ZLIB PNG EXPAT JPEG NanoSVG)
 
-# wxWidgets 3.3 cmake install doesn't include private headers.
-# OrcaSlicer uses some of the private headers (for accessibility support).
-# Copy the private headers directory after install.
-if(MSVC)
-    set(_wx_inc_dest ${DESTDIR}/include/wx)
-else()
-    set(_wx_inc_dest ${DESTDIR}/include/wx-3.3/wx)
-endif()
-ExternalProject_Add_Step(dep_wxWidgets copy_private_headers
-    DEPENDEES install
-    COMMENT "Copying wxWidgets private headers"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        <SOURCE_DIR>/include/wx/private
-        ${_wx_inc_dest}/private
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        <SOURCE_DIR>/include/wx/generic/private
-        ${_wx_inc_dest}/generic/private
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        <SOURCE_DIR>/include/wx/gtk/private
-        ${_wx_inc_dest}/gtk/private
-)
 
+    if (MSVC)
+        # After the build, copy the WebView2Loader.dll into the installation directory.
+        # This should probably be done better.
+        add_custom_command(TARGET dep_wxWidgets POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                "${CMAKE_CURRENT_BINARY_DIR}/builds/wxWidgets/lib/vc_x64_lib/WebView2Loader.dll"
+                "${${PROJECT_NAME}_DEP_INSTALL_PREFIX}/bin/WebView2Loader.dll")
+    endif()
+
+endif ()
 if (MSVC)
     add_debug_dep(dep_wxWidgets)
 endif ()

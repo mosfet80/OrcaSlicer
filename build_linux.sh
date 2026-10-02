@@ -442,7 +442,7 @@ if [[ -n "${USE_DOCKER}" ]] ; then
 fi
 
 # cmake 4.x compatibility workaround
-export CMAKE_POLICY_VERSION_MINIMUM=3.5
+export CMAKE_POLICY_VERSION_MINIMUM=3.10
 
 DISTRIBUTION=$(awk -F= '/^ID=/ {print $2}' /etc/os-release | tr -d '"')
 DISTRIBUTION_LIKE=$(awk -F= '/^ID_LIKE=/ {print $2}' /etc/os-release | tr -d '"')

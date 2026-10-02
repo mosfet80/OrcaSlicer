@@ -8,7 +8,7 @@ if (BUILD_SHARED_LIBS)
 endif ()
 
 orcaslicer_add_cmake_project(Qhull
-    URL https://github.com/qhull/qhull/archive/refs/tags/v8.1-alpha3.zip
+    URL "https://github.com/qhull/qhull/archive/refs/tags/v8.1-alpha3.zip"
     URL_HASH SHA256=7bd9b5ffae01e69c2ead52f9a9b688af6c65f9a1da05da0a170fa20d81404c06
     CMAKE_ARGS 
         -DINCLUDE_INSTALL_DIR=${CMAKE_INSTALL_INCLUDEDIR}

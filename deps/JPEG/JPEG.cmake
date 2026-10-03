@@ -5,5 +5,4 @@ orcaslicer_add_cmake_project(JPEG
         -DENABLE_SHARED=OFF
         -DENABLE_STATIC=ON
         -DCMAKE_POLICY_VERSION_MINIMUM=3.10
-        -DCMAKE_INSTALL_LIBDIR:PATH=${${PROJECT_NAME}_DEP_INSTALL_PREFIX}/lib #jpeg turbo forces lib64, explicitly set lib directory
 )
